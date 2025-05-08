@@ -1,0 +1,14 @@
+# Ignore the virtual environment
+venv/
+
+# Bytecode and cahche files
+__pycache__/
+*.pyc
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# VS Code and IDE settings (optional)
+.vscode/
+.idea/
