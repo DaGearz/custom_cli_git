@@ -12,3 +12,10 @@ Thumbs.db
 # VS Code and IDE settings (optional)
 .vscode/
 .idea/
+
+#Personal notes
+notes.md
+
+practice.py
+
+.practice
