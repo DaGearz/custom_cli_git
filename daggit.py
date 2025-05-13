@@ -10,6 +10,7 @@ def main():
     objects_dir = os.path.join(daggit_dir, "objects")
     commits_dir = os.path.join(daggit_dir, "commits")
     index_path = os.path.join(daggit_dir, "index")
+    logs_dir = os.path.join(daggit_dir, "logs")
 
     # Set up argument parser
     parser = argparse.ArgumentParser(
@@ -97,12 +98,52 @@ def main():
         commit_path = os.path.join(commits_dir, commit_hash)
         if not os.path.exists(commit_path):
             message = args.target 
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(commit_path, "w") as commit_file:
+                commit_file.write(f"Timestamp: {timestamp}\n")
                 commit_file.write(f"Message: {message}\n")
                 commit_file.write(index_content)
             print(f"Committed as: {commit_hash}")
         else:
             print("There are no updates to commit")
+
+    elif args.command == "log":
+
+        #early return if commit directory doesnt exist
+        if not os.path.exists(commits_dir):
+            return print("No commits found")
+        
+        #early return if no files in commit directory
+        commit_files = os.listdir(commits_dir)
+        if not commit_files:
+            return print("No commits found")
+        
+        #create log directory
+        if not os.path.exists(logs_dir):
+            os.mkdir(logs_dir)
+        
+        # Sort by modification time, newest first
+        commit_files.sort(key=lambda f: os.path.getmtime(os.path.join(commits_dir, f)), reverse=True)
+
+        #loop over all files in commit
+        for commit_hash in commit_files:
+            commit_path = os.path.join(commits_dir, commit_hash)
+            with open(commit_path, "r") as f:
+                lines = f.readlines()
+                timestamp_line = lines[0].strip() if len(lines) > 0 else "Timestamp: unknown"
+                message_line = lines[1].strip() if len(lines) > 1 else "Message: no message"
+                logs_path = os.path.join(logs_dir, "logs.txt")
+                with open(logs_path, "a") as f:
+                    f.write(f"Commit hash: {commit_hash}\n")
+                    f.write(f"{timestamp_line}\n")
+                    f.write(f"{message_line}\n")
+                    f.write("-" * 40 + "\n")
+
+                print(f"Commit hash: {commit_hash}")
+                print(timestamp_line)
+                print(message_line)
+                print("-" * 40 + "\n")
 
     else:
         print(f"Error: {args.command} is not a valid command")
