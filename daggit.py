@@ -145,6 +145,11 @@ def main():
                 print(message_line)
                 print("-" * 40 + "\n")
 
+    elif args.command == "status":
+        staged = []
+        modified = []
+        untrackeed = []
+
     else:
         print(f"Error: {args.command} is not a valid command")
 
