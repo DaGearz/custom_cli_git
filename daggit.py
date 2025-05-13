@@ -3,6 +3,7 @@
 import argparse
 import os
 import hashlib
+from datetime import datetime
 
 def main():
     # Define core directory paths once
@@ -98,7 +99,6 @@ def main():
         commit_path = os.path.join(commits_dir, commit_hash)
         if not os.path.exists(commit_path):
             message = args.target 
-            from datetime import datetime
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(commit_path, "w") as commit_file:
                 commit_file.write(f"Timestamp: {timestamp}\n")
@@ -108,7 +108,7 @@ def main():
         else:
             print("There are no updates to commit")
 
-    elif args.command == "log":
+    elif args.command == "logs":
 
         #early return if commit directory doesnt exist
         if not os.path.exists(commits_dir):
@@ -148,7 +148,56 @@ def main():
     elif args.command == "status":
         staged = []
         modified = []
-        untrackeed = []
+        untracked = []
+
+        #Read indexed files
+        indexed_files = {}
+        if os.path.exists(index_path):
+            with open(index_path, "r") as f:
+                for line in f:
+                    parts = line.strip().split(" ",1)
+                    if len(parts) == 2:
+                        indexed_files[parts[1]] = parts[0]
+
+        #walk through current working directory
+        for fname in os.listdir("."):
+
+            #exlude program and .daggit directory
+            if fname.startswith(".") or fname in ["daggit.py"]:
+                continue
+
+            #hash each file
+            if os.path.isfile(fname):
+                with open(fname, "rb") as f:
+                    content = f.read()
+                file_hash = hashlib.sha1(content).hexdigest()
+
+                #compare above hash to saved hash and use to save in approriate array
+                if fname in indexed_files:
+                    #if file exist in both and match
+                    if file_hash == indexed_files[fname]:
+                        staged.append(fname)
+                    #if file exist and both and hash dont match
+                    else:
+                        modified.append(fname)
+                #if file doesn't exist in staged. Meaning these are new files that have not been added
+                else:
+                    untracked.append(fname)
+
+        #Display status
+        print("Staged Files")
+        for f in staged:
+            print(f" {f}")
+
+        print("\nModified files:")
+        for f in modified:
+            print(f" {f}")
+
+        print("\nUntracked files:")
+        for f in untracked:
+            print(f" {f}")
+
+
 
     else:
         print(f"Error: {args.command} is not a valid command")
